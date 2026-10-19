@@ -1,6 +1,6 @@
 {
   "_doc": [
-    "Vendor price table for hooks/statusline.js. Rates are per 1M tokens in the vendor's billing currency.",
+    "Vendor price table for statusline.js. Rates are per 1M tokens in the vendor's billing currency.",
     "currency: USD renders as $, CNY as ¥; symbol is the fallback when currency is absent.",
     "match: substrings tested against ANTHROPIC_BASE_URL (lower-cased). No match / no ANTHROPIC_BASE_URL = Anthropic.",
     "models: key = model slug (lower-case, without [1m]); exact match first, then longest prefix match.",

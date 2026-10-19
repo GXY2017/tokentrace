@@ -4,3 +4,4 @@ node_modules/
 statusline-cache-observed.json
 statusline-pricing.local.json
 .env
+.claude/

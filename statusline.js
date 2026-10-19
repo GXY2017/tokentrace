@@ -302,7 +302,7 @@ function windowPart(name, w) {
 // with kind "weekly_scoped" in GET /api/oauth/usage, the endpoint behind /usage.
 // A detached child fetches it so the status line never waits on the network;
 // the result is cached account-wide (one file per config dir) in $TMP.
-// STATUSLINE_MODEL_LIMITS=0 or CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC turns it off.
+// Off by default: STATUSLINE_MODEL_LIMITS=1 turns it on; CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC keeps it off.
 const USAGE_TTL_MS = 180e3;
 const USAGE_BACKOFF_MS = 600e3; // after a failed fetch (expired token, 429)
 const USAGE_TIMEOUT_MS = 8000;
@@ -324,7 +324,7 @@ function readJson(p) {
 // Cached windows [{ name, used_percentage, resets_at, stale }]; starts a
 // background refresh when the cache is due and no refresh is running.
 function modelWindows() {
-  if (process.env.STATUSLINE_MODEL_LIMITS === '0' || process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) return [];
+  if (process.env.STATUSLINE_MODEL_LIMITS !== '1' || process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) return [];
   const cachePath = usageCachePath();
   const c = readJson(cachePath) || {};
   const now = Date.now();

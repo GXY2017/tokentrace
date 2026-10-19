@@ -3,7 +3,7 @@
 A fast, dependency-free status line for [Claude Code](https://code.claude.com/). It puts the model, working directory, git branch, usage or billing, context window, and prompt-cache health into one terminal line.
 
 ```
-claude-opus-5-5 · my-project · main* · 5h 12% @14:30 · 7d 45% @10/22 · ctx 23% 46k · cache 87% @~10:30
+Claude Opus 5.5 · my-project · main* · 5h 12% @14:30 · 7d 45% @10/22 · ctx 23% 46k · cache 87% miss 1k @15:30
 ```
 
 ## Features
@@ -26,7 +26,7 @@ claude-opus-5-5 · my-project · main* · 5h 12% @14:30 · 7d 45% @10/22 · ctx 
 1. Clone this repository somewhere, for example:
 
    ```sh
-   git clone https://github.com/<your-account>/tokentrace.git ~/.claude/hooks/tokentrace
+   git clone https://github.com/GXY2017/tokentrace.git ~/.claude/hooks/tokentrace
    ```
 
 2. Edit `statusline-pricing.json` for the vendors you use. The shipped table is an example; prices change and must be verified against each vendor.
@@ -85,11 +85,11 @@ Environment variables:
 - `peak`: optional multiplier windows (`tz_offset_hours`, `weekdays`, `windows`, `multiplier`, `label_peak`, `label_offpeak`).
 - `subscription`: optional label. When set, the vendor shows that label instead of a computed cost.
 
-Cache TTL estimates are bidirectional: a cache hit at a longer gap raises the estimate, and a miss after a shorter gap lowers it. The estimate is marked with `~`. A single miss can lower it; a later longer hit can raise it again.
+On a non-Anthropic vendor the estimated expiry is shown as `@~HH:MM`. Cache TTL estimates are bidirectional: a cache hit at a longer gap raises the estimate, and a miss after a shorter gap lowers it. The estimate is marked with `~`. A single miss can lower it; a later longer hit can raise it again.
 
 ## Privacy
 
-The script reads the status-line JSON from stdin and the transcript file named in that JSON. It writes cache files under `~/.claude/cache` or `STATUSLINE_CACHE_DIR`, and runs `git` in the current directory. It does not upload transcripts or usage data.
+The script reads the status-line JSON from stdin and the transcript file named in that JSON. It writes the observed cache-TTL file under `~/.claude/cache` or `STATUSLINE_CACHE_DIR`, keeps short-lived git, cost and usage caches as `claude-statusline-*.json` in the system temp directory, and runs `git` in the current directory. It does not upload transcripts or usage data.
 
 The optional `STATUSLINE_MODEL_LIMITS=1` feature reads `~/.claude/.credentials.json` and calls Anthropic's OAuth usage endpoint. It is off by default. No API keys or credentials are stored in this repository.
 

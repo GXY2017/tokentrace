@@ -11,6 +11,7 @@
   "context_window": {
     "used_percentage": 23,
     "context_window_size": 200000,
+    "total_input_tokens": 46000,
     "current_usage": {
       "input_tokens": 1200,
       "cache_read_input_tokens": 8000,
@@ -29,5 +30,8 @@
   },
   "cost": {
     "total_cost_usd": 0.42
+  },
+  "prompt_cache": {
+    "expires_at": 2000000000
   }
 }
