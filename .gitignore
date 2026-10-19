@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.DS_Store
+statusline-cache-observed.json
+statusline-pricing.local.json
+.env

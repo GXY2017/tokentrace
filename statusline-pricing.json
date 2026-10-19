@@ -1,0 +1,99 @@
+{
+  "_doc": [
+    "Vendor price table for hooks/statusline.js. Rates are per 1M tokens in the vendor's billing currency.",
+    "currency: USD renders as $, CNY as ¥; symbol is the fallback when currency is absent.",
+    "match: substrings tested against ANTHROPIC_BASE_URL (lower-cased). No match / no ANTHROPIC_BASE_URL = Anthropic.",
+    "models: key = model slug (lower-case, without [1m]); exact match first, then longest prefix match.",
+    "cacheWrite = price charged for tokens written to cache (vendors without a write surcharge: same as input).",
+    "peak: optional. Rates in `models` are OFF-PEAK; a request whose timestamp falls in a window on a listed weekday",
+    "      (UTC day numbers, 0=Sun) is multiplied by `multiplier`. Chinese public holidays are not modelled.",
+    "subscription: if set, no cost is computed; the label is shown instead.",
+    "cache_ttl_minutes: how long this vendor keeps a prompt-cache prefix alive after the last request. The status line",
+    "      shows `cache NN% @HH:MM` from the last request + this value; null = unknown, no expiry shown.",
+    "      Anthropic sessions ignore this and use the TTL Claude Code reports (1h subscription, 5m API key).",
+    "      A model row may carry its own cache_ttl_minutes, which overrides the vendor value for that model.",
+    "      While neither is set, the script uses a bidirectional observed estimate for that vendor+model",
+    "      (~/.claude/cache/statusline-cache-observed.json, written automatically): a cache hit at gap h raises",
+    "      the lower bound; a miss after a shorter gap m lowers the upper bound to m. A gap counts only between",
+    "      two consecutive requests to the same model; the shown time is marked with ~.",
+    "Edit this file when a vendor changes prices; statusline.js needs no change."
+  ],
+  "vendors": {
+    "deepseek": {
+      "label": "DeepSeek",
+      "match": ["api.deepseek.com"],
+      "currency": "USD",
+      "symbol": "$",
+      "source": "https://api-docs.deepseek.com/quick_start/pricing",
+      "verified": "2026-10-15",
+      "cache_ttl_minutes": null,
+      "cache_note": "DeepSeek caches automatically and evicts unused prefixes after hours; no fixed TTL published. Set a number here to show an expiry.",
+      "peak": {
+        "tz_offset_hours": 0,
+        "weekdays": [1, 2, 3, 4, 5],
+        "windows": [[1, 4], [6, 10]],
+        "multiplier": 2,
+        "label_peak": "peak",
+        "label_offpeak": "off-peak"
+      },
+      "models": {
+        "deepseek-flash": { "input": 0.15, "output": 0.6, "cacheRead": 0.003, "cacheWrite": 0.15 },
+        "deepseek-v4-flash": { "input": 0.15, "output": 0.6, "cacheRead": 0.003, "cacheWrite": 0.15 }
+      }
+    },
+    "zhipu-cn": {
+      "label": "GLM",
+      "match": ["open.bigmodel.cn"],
+      "currency": "CNY",
+      "symbol": "¥",
+      "source": "https://docs.bigmodel.cn/cn/guide/start/pricing",
+      "verified": "2026-10-15",
+      "cache_ttl_minutes": null,
+      "cache_note": "Zhipu cache storage is limited-time free; TTL not published. Set a number here to show an expiry.",
+      "models": {
+        "glm-5.3": { "input": 8, "output": 28, "cacheRead": 2, "cacheWrite": 8 },
+        "glm-5.3-flash": { "input": 0.8, "output": 2.8, "cacheRead": 0.23, "cacheWrite": 0.8 },
+        "glm-5.3-flashx": { "input": 2, "output": 7, "cacheRead": 0.57, "cacheWrite": 2 },
+        "glm-5.2": { "input": 8, "output": 28, "cacheRead": 2, "cacheWrite": 8 }
+      }
+    },
+    "zai": {
+      "label": "GLM",
+      "match": ["api.z.ai"],
+      "currency": "USD",
+      "symbol": "$",
+      "source": "https://docs.z.ai/guides/overview/pricing",
+      "verified": "2026-10-15",
+      "cache_ttl_minutes": null,
+      "models": {
+        "glm-5.3": { "input": 1.4, "output": 4.4, "cacheRead": 0.26, "cacheWrite": 1.4 },
+        "glm-5.3-flash": { "input": 0.15, "output": 0.5, "cacheRead": 0.03, "cacheWrite": 0.15 },
+        "glm-5.3-flashx": { "input": 0.37, "output": 1.25, "cacheRead": 0.075, "cacheWrite": 0.37 },
+        "glm-5.2": { "input": 1.4, "output": 4.4, "cacheRead": 0.26, "cacheWrite": 1.4 }
+      }
+    },
+    "kimi-code": {
+      "label": "Kimi Code",
+      "match": ["api.kimi.com/coding"],
+      "subscription": "monthly plan",
+      "cache_ttl_minutes": null
+    },
+    "openrouter": {
+      "label": "OpenRouter",
+      "match": ["openrouter.ai"],
+      "currency": "USD",
+      "symbol": "$",
+      "source": "https://openrouter.ai/models",
+      "verified": "2026-10-15",
+      "cache_ttl_minutes": null,
+      "models": {
+        "deepseek/deepseek-v4-flash-0731:free": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+      }
+    },
+    "ollama": {
+      "label": "Ollama",
+      "match": ["localhost:11434", "127.0.0.1:11434", "ollama.com"],
+      "subscription": "local/cloud"
+    }
+  }
+}
