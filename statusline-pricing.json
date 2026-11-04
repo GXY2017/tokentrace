@@ -78,6 +78,22 @@
       "subscription": "monthly plan",
       "cache_ttl_minutes": null
     },
+    "gemini": {
+      "label": "Gemini",
+      "match": ["generativelanguage.googleapis.com"],
+      "vendor_note": "Claude Code reaches the Gemini API through a translating proxy (e.g. LiteLLM). When that proxy runs on a random local port, have the launcher set STATUSLINE_VENDOR=gemini instead of relying on `match`.",
+      "currency": "USD",
+      "symbol": "$",
+      "source": "https://aistudio.google.com/docs/pricing (Standard tier)",
+      "verified": "2026-11-04",
+      "price_note": "Launch prices. gemini-4-argon doubles to 4 / 20 / 0.20 from 2026-12-01; gemini-3.8-flash doubles to 1.5 / 7.5 / 0.15 from 2027-01-01. Update the rows then.",
+      "cache_note": "Gemini implicit caching; no published TTL, so the observed estimate is used. cacheWrite = input: no write surcharge.",
+      "cache_ttl_minutes": null,
+      "models": {
+        "gemini-4-argon": { "input": 2, "output": 10, "cacheRead": 0.1, "cacheWrite": 2 },
+        "gemini-3.8-flash": { "input": 0.75, "output": 3.75, "cacheRead": 0.075, "cacheWrite": 0.75 }
+      }
+    },
     "openrouter": {
       "label": "OpenRouter",
       "match": ["openrouter.ai"],

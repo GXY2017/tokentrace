@@ -69,6 +69,7 @@ Environment variables:
 | --- | --- | --- |
 | `STATUSLINE_PRICING` | `statusline-pricing.json` next to the script | Price-table path. |
 | `STATUSLINE_CACHE_DIR` | `~/.claude/cache` | Directory for the observed cache-TTL file. |
+| `STATUSLINE_VENDOR` | unset | Name of a `vendors` entry to use instead of matching `ANTHROPIC_BASE_URL`, for a local proxy on a random port. |
 | `CLAUDE_CTX_LIMIT` | model heuristic | Context-window size in tokens. |
 | `STATUSLINE_API_COST=1` | off | Show the API-equivalent cost on a subscription plan. |
 | `STATUSLINE_MODEL_LIMITS=1` | off | Enable optional per-model weekly windows. This reads the local Claude Code OAuth credentials and calls an undocumented Anthropic usage endpoint. |
@@ -77,7 +78,7 @@ Environment variables:
 
 `statusline-pricing.json` has a `vendors` object. Each vendor entry can define:
 
-- `match`: substrings tested against `ANTHROPIC_BASE_URL` (case-insensitive). No match means Anthropic.
+- `match`: substrings tested against `ANTHROPIC_BASE_URL` (case-insensitive). No match means Anthropic. A launcher can bypass matching by setting `STATUSLINE_VENDOR` to the entry's key, which is how a translating proxy on a random local port (for example LiteLLM in front of the Gemini API) gets priced.
 - `label`: name shown in the status line.
 - `currency`: `USD` renders `$`, `CNY` renders `¥`.
 - `models`: token prices per 1M tokens, keyed by model slug. `input`, `output`, `cacheRead`, and `cacheWrite` are required for cost display.

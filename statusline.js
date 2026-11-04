@@ -11,7 +11,9 @@
  *     Optional per-model weekly windows come from the local OAuth credentials and
  *     an undocumented usage endpoint; off by default, enable with STATUSLINE_MODEL_LIMITS=1.
  *   - Anthropic API key (no rate_limits): cost.total_cost_usd.
- *   - Other vendor (ANTHROPIC_BASE_URL matches a `vendors` entry): a
+ *   - Other vendor (ANTHROPIC_BASE_URL matches a `vendors` entry, or the
+ *     launcher names the entry in STATUSLINE_VENDOR, needed when the base URL
+ *     is a local proxy on a random port): a
  *     subscription label, or the cost summed from the transcript's usage
  *     records (main + subagents, deduplicated by requestId, peak/off-peak by
  *     record timestamp). Incremental: byte offsets and the running total are
@@ -84,6 +86,10 @@ function loadPricing() {
 function detectVendor(pricing) {
   const base = (process.env.ANTHROPIC_BASE_URL || '').toLowerCase();
   if (!base) return { key: 'anthropic' };
+  // A launcher that fronts the vendor with a local proxy (random 127.0.0.1 port,
+  // nothing to match) names the vendor entry explicitly.
+  const named = (process.env.STATUSLINE_VENDOR || '').trim();
+  if (named && pricing.vendors && pricing.vendors[named]) return { key: named, cfg: pricing.vendors[named] };
   for (const [key, cfg] of Object.entries(pricing.vendors || {})) {
     const pats = [].concat(cfg.match || []);
     if (pats.some((p) => base.includes(String(p).toLowerCase()))) return { key, cfg };
