@@ -85,11 +85,14 @@
       "currency": "USD",
       "symbol": "$",
       "source": "https://aistudio.google.com/docs/pricing (Standard tier)",
-      "verified": "2026-11-04",
-      "price_note": "Launch prices. gemini-4-argon doubles to 4 / 20 / 0.20 from 2026-12-01; gemini-3.8-flash doubles to 1.5 / 7.5 / 0.15 from 2027-01-01. Update the rows then.",
-      "cache_note": "Gemini implicit caching; no published TTL, so the observed estimate is used. cacheWrite = input: no write surcharge.",
+      "verified": "2026-11-19",
+      "price_note": "Paid-tier launch prices. gemini-4-carbon and gemini-4-argon double to 4 / 20 / 0.20 from 2026-12-01; gemini-3.8-flash doubles to 1.5 / 7.5 / 0.15 from 2027-01-01. Update the rows then. gemini-4-neon and gemini-4-hydrogen had no scheduled change listed on 2026-11-19. A free tier (hydrogen, flash) applies only to keys from projects without billing.",
+      "cache_note": "Gemini implicit caching; no published TTL, so the observed estimate is used. cacheWrite = input: no write surcharge. The 4-series models reject explicit caching, so a translating proxy has to strip cache_control.",
       "cache_ttl_minutes": null,
       "models": {
+        "gemini-4-neon": { "input": 3, "output": 15, "cacheRead": 0.15, "cacheWrite": 3 },
+        "gemini-4-hydrogen": { "input": 1.5, "output": 7.5, "cacheRead": 0.075, "cacheWrite": 1.5 },
+        "gemini-4-carbon": { "input": 2, "output": 10, "cacheRead": 0.1, "cacheWrite": 2 },
         "gemini-4-argon": { "input": 2, "output": 10, "cacheRead": 0.1, "cacheWrite": 2 },
         "gemini-3.8-flash": { "input": 0.75, "output": 3.75, "cacheRead": 0.075, "cacheWrite": 0.75 }
       }

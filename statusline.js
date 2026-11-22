@@ -3,7 +3,7 @@
  * statusline.js — Claude Code statusline.
  *
  * Reads JSON from stdin (Claude Code passes session info), renders one line:
- *   model | dir | git-branch | billing | ctx
+ *   model cache-hit%@expiry | dir | git-branch | billing | ctx
  *
  * billing segment (price table in statusline-pricing.json):
  *   - Anthropic subscription (rate_limits present): 5h / 7d window usage with
@@ -21,8 +21,8 @@
  *
  * ctx segment: context_window.used_percentage / context_window_size from
  * Claude Code; falls back to the transcript tail on old versions.
- * cache segment: last request's cache-hit share (context_window.current_usage),
- * uncached tokens, and prompt_cache expiry.
+ * cache part (after the model name): last request's cache-hit share
+ * (context_window.current_usage) and prompt_cache expiry, "97%@14:20".
  * Override the assumed window with CLAUDE_CTX_LIMIT (tokens).
  *
  * Wire up in settings.json:
@@ -308,6 +308,8 @@ function windowPart(name, w) {
 // with kind "weekly_scoped" in GET /api/oauth/usage, the endpoint behind /usage.
 // A detached child fetches it so the status line never waits on the network;
 // the result is cached account-wide (one file per config dir) in $TMP.
+// The server only answers a Claude Code User-Agent, so the child sends one,
+// built from the `version` field of the status line input.
 // Off by default: STATUSLINE_MODEL_LIMITS=1 turns it on; CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC keeps it off.
 const USAGE_TTL_MS = 180e3;
 const USAGE_BACKOFF_MS = 600e3; // after a failed fetch (expired token, 429)
@@ -329,7 +331,7 @@ function readJson(p) {
 
 // Cached windows [{ name, used_percentage, resets_at, stale }]; starts a
 // background refresh when the cache is due and no refresh is running.
-function modelWindows() {
+function modelWindows(version) {
   if (process.env.STATUSLINE_MODEL_LIMITS !== '1' || process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) return [];
   const cachePath = usageCachePath();
   const c = readJson(cachePath) || {};
@@ -339,7 +341,7 @@ function modelWindows() {
   if (due && !running) {
     try {
       fs.writeFileSync(cachePath, JSON.stringify({ ...c, started_at: now }));
-      spawn(process.execPath, [__filename, '--refresh-usage'], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+      spawn(process.execPath, [__filename, '--refresh-usage', String(version || '')], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
     } catch { /* ok */ }
   }
   const stale = !c.ok_at || now - c.ok_at > USAGE_STALE_MS;
@@ -349,7 +351,7 @@ function modelWindows() {
 }
 
 // Child process: one GET /api/oauth/usage, result written to the cache.
-function refreshUsage() {
+function refreshUsage(version) {
   const cachePath = usageCachePath();
   const prev = readJson(cachePath) || {};
   delete prev.started_at;
@@ -361,8 +363,12 @@ function refreshUsage() {
   // An expired token waits for Claude Code to renew it.
   if (!cred.accessToken || (cred.expiresAt && cred.expiresAt <= Date.now())) return finish({ error: 'token' });
   const req = https.request({
-    host: 'api.anthropic.com', path: '/api/oauth/usage', method: 'GET', timeout: USAGE_TIMEOUT_MS,
-    headers: { Authorization: `Bearer ${cred.accessToken}`, 'anthropic-beta': 'oauth-2025-04-20' },
+    host: 'api.anthropic.com', path: '/api/oauth/usage?skip_spend=1', method: 'GET', timeout: USAGE_TIMEOUT_MS,
+    headers: {
+      Authorization: `Bearer ${cred.accessToken}`,
+      'anthropic-beta': 'oauth-2025-04-20',
+      'User-Agent': `claude-cli/${version || '2.1.310'} (external, cli)`,
+    },
   }, (res) => {
     let body = '';
     res.setEncoding('utf8');
@@ -403,7 +409,7 @@ function billingSegments(input, vendor, acc) {
     const rl = input.rate_limits || {};
     const parts = [windowPart('5h', rl.five_hour), windowPart('7d', rl.seven_day)].filter(Boolean);
     if (parts.length && process.env.STATUSLINE_MODEL_LIMITS === '1') {
-      for (const w of modelWindows()) {
+      for (const w of modelWindows(input.version)) {
         const p = windowPart(w.name, w);
         if (p) parts.push(w.stale ? paint(C.gray, `${w.name} ${Math.round(w.used_percentage)}%?`) : p);
       }
@@ -549,8 +555,8 @@ function cacheExpiry(input, vendor) {
   return { text: (estimated ? '~' : '') + fmtReset(Math.floor(exp / 1000)), expired: exp <= Date.now() };
 }
 
-// Last request: share of input served from the prompt cache, tokens that were
-// not (fresh input + cache writes), and when the warm cache expires.
+// Last request: share of input served from the prompt cache and when the warm
+// cache expires, as "<hit>%@<expiry>", shown right after the model name.
 function cacheSegment(input, vendor) {
   const cu = input.context_window && input.context_window.current_usage;
   if (!cu) return null;
@@ -560,13 +566,9 @@ function cacheSegment(input, vendor) {
   if (!total) return null;
   const pct = Math.round((hit / total) * 100);
   const color = pct >= 80 ? C.green : pct >= 50 ? C.yellow : C.red;
-  let s = paint(color, `cache ${pct}%`);
-  if (miss >= 1000) s += paint(C.gray, ` miss ${Math.round(miss / 1000)}k`);
+  let s = paint(color, `${pct}%`);
   const exp = cacheExpiry(input, vendor);
-  if (exp) {
-    const t = exp.text === 'cold' ? ' cold' : ` @${exp.text}`;
-    s += paint(exp.expired ? C.red : C.gray, t); // red: the cached prefix has expired
-  }
+  if (exp) s += paint(exp.expired ? C.red : C.gray, `@${exp.text}`); // red: the cached prefix has expired
   return s;
 }
 
@@ -585,16 +587,15 @@ function main() {
   const acc = vendor.key !== 'anthropic' && vendor.cfg ? vendorCost(input, vendor) : null;
 
   const parts = [];
-  parts.push(paint(C.cyan, model));
+  const cache = cacheSegment(input, vendor);
+  parts.push(paint(C.cyan, model) + (cache ? ` ${cache}` : ''));
   parts.push(paint(C.yellow, path.basename(cwd)) + (branch ? paint(C.gray, ` ${branch}${dirty ? '*' : ''}`) : ''));
   parts.push(...billingSegments(input, vendor, acc));
   const ctx = ctxSegment(input);
   if (ctx) parts.push(ctx);
-  const cache = cacheSegment(input, vendor);
-  if (cache) parts.push(cache);
 
   process.stdout.write(parts.join(paint(C.gray, ' · ')));
 }
 
-if (process.argv[2] === '--refresh-usage') refreshUsage();
+if (process.argv[2] === '--refresh-usage') refreshUsage(process.argv[3]);
 else main();

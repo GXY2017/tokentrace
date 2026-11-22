@@ -1,6 +1,6 @@
 {
   "name": "tokentrace",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A fast Claude Code status line for model, cost, context, and cache TTL.",
   "bin": {
     "tokentrace": "statusline.js"

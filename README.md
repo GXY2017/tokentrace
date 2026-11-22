@@ -3,8 +3,10 @@
 A fast, dependency-free status line for [Claude Code](https://code.claude.com/). It puts the model, working directory, git branch, usage or billing, context window, and prompt-cache health into one terminal line.
 
 ```
-Claude Opus 5.5 · my-project · main* · 5h 12% @14:30 · 7d 45% @10/22 · ctx 23% 46k · cache 87% miss 1k @15:30
+Claude Opus 5.5 87%@15:30 · my-project main* · 5h 12% @14:30 · 7d 45% @10/22 · ctx 23% 46k
 ```
+
+`87%@15:30` after the model name is the share of the last request served from the prompt cache and the time the warm cache expires (red once it has expired).
 
 ## Features
 
@@ -72,7 +74,7 @@ Environment variables:
 | `STATUSLINE_VENDOR` | unset | Name of a `vendors` entry to use instead of matching `ANTHROPIC_BASE_URL`, for a local proxy on a random port. |
 | `CLAUDE_CTX_LIMIT` | model heuristic | Context-window size in tokens. |
 | `STATUSLINE_API_COST=1` | off | Show the API-equivalent cost on a subscription plan. |
-| `STATUSLINE_MODEL_LIMITS=1` | off | Enable optional per-model weekly windows. This reads the local Claude Code OAuth credentials and calls an undocumented Anthropic usage endpoint. |
+| `STATUSLINE_MODEL_LIMITS=1` | off | Enable optional per-model weekly windows. This reads the local Claude Code OAuth credentials and calls an undocumented Anthropic usage endpoint, which answers only a Claude Code `User-Agent`; the request sends one. |
 
 ### Price table
 
@@ -86,7 +88,7 @@ Environment variables:
 - `peak`: optional multiplier windows (`tz_offset_hours`, `weekdays`, `windows`, `multiplier`, `label_peak`, `label_offpeak`).
 - `subscription`: optional label. When set, the vendor shows that label instead of a computed cost.
 
-On a non-Anthropic vendor the estimated expiry is shown as `@~HH:MM`. Cache TTL estimates are bidirectional: a cache hit at a longer gap raises the estimate, and a miss after a shorter gap lowers it. The estimate is marked with `~`. A single miss can lower it; a later longer hit can raise it again.
+On Anthropic, `@cold` means Claude Code reports the cache as no longer warm without giving an expiry time. On a non-Anthropic vendor the estimated expiry is shown as `@~HH:MM`. Cache TTL estimates are bidirectional: a cache hit at a longer gap raises the estimate, and a miss after a shorter gap lowers it. The estimate is marked with `~`. A single miss can lower it; a later longer hit can raise it again.
 
 ## Privacy
 
