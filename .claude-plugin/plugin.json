@@ -1,0 +1,13 @@
+{
+  "name": "tokentrace",
+  "version": "0.2.0",
+  "description": "Sets up tokentrace, a fast Claude Code status line for model, cost, context, and cache TTL.",
+  "author": {
+    "name": "GXY2017",
+    "url": "https://github.com/GXY2017"
+  },
+  "homepage": "https://github.com/GXY2017/tokentrace",
+  "repository": "https://github.com/GXY2017/tokentrace",
+  "license": "MIT",
+  "keywords": ["statusline", "status-line", "cost", "prompt-cache", "rate-limits"]
+}

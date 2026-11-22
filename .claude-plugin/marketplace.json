@@ -1,0 +1,15 @@
+{
+  "name": "tokentrace",
+  "description": "tokentrace: a fast Claude Code status line for model, cost, context, and cache TTL, with a setup skill.",
+  "owner": {
+    "name": "GXY2017",
+    "url": "https://github.com/GXY2017"
+  },
+  "plugins": [
+    {
+      "name": "tokentrace",
+      "source": "./",
+      "description": "Sets up tokentrace, a fast Claude Code status line for model, cost, context, and cache TTL."
+    }
+  ]
+}

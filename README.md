@@ -25,6 +25,27 @@ Claude Opus 5.5 87%@15:30 · my-project main* · 5h 12% @14:30 · 7d 45% @10/22 
 
 ## Install
 
+### Let the agent do it
+
+The repository ships a setup skill, `tokentrace-setup`, that clones the script, tests it and writes the `statusLine` entry for you (it asks before replacing an existing one).
+
+As a Claude Code plugin:
+
+```
+/plugin marketplace add GXY2017/tokentrace
+/plugin install tokentrace@tokentrace
+```
+
+Or as a standalone skill for any agent that reads `SKILL.md`:
+
+```sh
+npx skills add GXY2017/tokentrace
+```
+
+Then ask: "set up the tokentrace status line". A plugin cannot register a status line by itself, so the skill only automates the manual steps below.
+
+### By hand
+
 1. Clone this repository somewhere, for example:
 
    ```sh
